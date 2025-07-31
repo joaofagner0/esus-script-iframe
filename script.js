@@ -52,14 +52,14 @@
   }
 
   function generateHTML(data) {
-    let hasAlert = false;
+    let alertCount = 0;
 
     if (data.status) {
-      return `<span>${data.status}</span>`;
+      return { html: `<span>${data.status}</span>`, alertCount };
     }
 
     if (data.error) {
-      return `<span>Erro: ${data.error}</span>`;
+      return { html: `<span>Erro: ${data.error}</span>`, alertCount };
     }
 
     const groups = {
@@ -75,7 +75,7 @@
       const prefix = key.match(/^ind\d/);
       if (prefix && groups[prefix[0]]) {
         groups[prefix[0]].items.push(value);
-        hasAlert = true;
+        alertCount++;
       }
     }
 
@@ -92,11 +92,15 @@
 
     if (data.st_cad) {
       htmlParts.push(`<li>Cadastro</li><ul><li>${data.st_cad}</li></ul>`);
+      alertCount++;
     }
 
     htmlParts.push('</ul>');
 
-    return { html: htmlParts.join('\n'), hasAlert };
+    return {
+      html: htmlParts.join('\n'),
+      alertCount
+    };
   }
 
   async function injectPanel() {
@@ -148,6 +152,28 @@
         border-radius: 4px;
       }
 
+      .iframe-button {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        text-align: center;
+        padding-block: 5px;
+        height: 250px;
+        background: rgb(0, 81, 162);
+        position: fixed;
+        top: 50%;
+        right: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9991;
+        cursor: pointer;
+        border-radius: 4px;
+        gap: 10px;
+      }
+
       .iframe-content {
         display: flex;
         flex-direction: column;
@@ -178,18 +204,21 @@
         visibility: visible;
       }
 
-      .iframe.alert {
-        animation: blink-red 1s infinite;
+      .notification-badge {
+        color: white;
+        font-weight: bold;
+        padding: 6px 2px 7px 4px;
+        border-radius: 100%;
+        font-size: 12px;
+        vertical-align: middle;
       }
 
-      .iframe.alert::before {
-        animation: blink-red 1s infinite;
-        box-shadow: 0 0 8px red;
+      .badge-error {
+        background-color: rgb(208, 29, 40);
       }
 
-      @keyframes blink-red {
-        0%, 100% { box-shadow: 0 0 10px red; }
-        50% { box-shadow: 0 0 0 transparent; }
+      .badge-success {
+        background-color: rgb(35, 123, 1);
       }
     `;
 
@@ -200,18 +229,19 @@
     container.id = "injected-panel";
 
     const indicators = await getIndicators();
-    const { html, hasAlert } = generateHTML(indicators);
+    const { html, alertCount } = generateHTML(indicators);
 
     container.innerHTML = `
+      <div class="iframe-button" id="iframe-button">
+        INDICADORES
+        ${alertCount > 0 ? `<span class="notification-badge badge-error">${alertCount}</span>` : `<span class="notification-badge badge-success">v</span>`}
+      </div>
       <div class="iframe-content">
         <span style="font-weight: bold;">Indicadores de Qualidade</span>
+        <span style="font-size: small;">(Os dados serão atualizados após o processamento)</span>
         ${html}
       </div>
     `;
-
-    if (hasAlert) {
-      container.classList.add("alert");
-    }
 
     document.body.appendChild(container);
 

@@ -52,6 +52,8 @@
   }
 
   function generateHTML(data) {
+    let hasAlert = false;
+
     if (data.status) {
       return `<span>${data.status}</span>`;
     }
@@ -73,6 +75,7 @@
       const prefix = key.match(/^ind\d/);
       if (prefix && groups[prefix[0]]) {
         groups[prefix[0]].items.push(value);
+        hasAlert = true;
       }
     }
 
@@ -92,7 +95,8 @@
     }
 
     htmlParts.push('</ul>');
-    return htmlParts.join('\n');
+
+    return { html: htmlParts.join('\n'), hasAlert };
   }
 
   async function injectPanel() {
@@ -173,6 +177,20 @@
         opacity: 1;
         visibility: visible;
       }
+
+      .iframe.alert {
+        animation: blink-red 1s infinite;
+      }
+
+      .iframe.alert::before {
+        animation: blink-red 1s infinite;
+        box-shadow: 0 0 8px red;
+      }
+
+      @keyframes blink-red {
+        0%, 100% { box-shadow: 0 0 10px red; }
+        50% { box-shadow: 0 0 0 transparent; }
+      }
     `;
 
     document.head.appendChild(style);
@@ -182,14 +200,19 @@
     container.id = "injected-panel";
 
     const indicators = await getIndicators();
-    const htmlIndicators = generateHTML(indicators);
+    const { html, hasAlert } = generateHTML(indicators);
 
     container.innerHTML = `
       <div class="iframe-content">
         <span style="font-weight: bold;">Indicadores de Qualidade</span>
-        ${htmlIndicators}
+        ${html}
       </div>
     `;
+
+    if (hasAlert) {
+      container.classList.add("alert");
+    }
+
     document.body.appendChild(container);
 
     container.addEventListener("click", (e) => {

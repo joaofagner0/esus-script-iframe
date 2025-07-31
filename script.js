@@ -43,7 +43,7 @@
         method: "GET",
       });
 
-      if (!response.ok) throw new Error("Erro ao buscar dados");
+      if (!response.ok) throw new Error("Falha na obtenção dos dados");
 
       return await response.json();
     } catch (error) {
@@ -59,7 +59,7 @@
     }
 
     if (data.error) {
-      return { html: `<span>Erro: ${data.error}</span>`, alertCount };
+      return { html: `<span>${data.error}</span>` };
     }
 
     const groups = {
@@ -234,11 +234,17 @@
     container.innerHTML = `
       <div class="iframe-button" id="iframe-button">
         INDICADORES
-        ${alertCount > 0 ? `<span class="notification-badge badge-error">${alertCount}</span>` : `<span class="notification-badge badge-success">v</span>`}
+        ${
+          indicators.error
+            ? `<span class="notification-badge badge-error">x</span>`
+            : alertCount > 0
+              ? `<span class="notification-badge badge-error">${alertCount}</span>`
+              : `<span class="notification-badge badge-success">v</span>`
+        }
       </div>
       <div class="iframe-content">
         <span style="font-weight: bold;">Indicadores de Qualidade</span>
-        <span style="font-size: small;">(Os dados serão atualizados após o processamento)</span>
+        ${!indicators.error ? '<span style="font-size: small;">(Os dados serão atualizados após o processamento)</span>' : '<span></span>'}
         ${html}
       </div>
     `;

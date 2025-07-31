@@ -1,17 +1,122 @@
 (function () {
-  let painelInjetado = false;
+  let injectedPanel = false;
 
-  // function urlEhPermitida() {
-  //   return window.location.href.includes("/folha-rosto");
-  // }
+  function isAllowedUrl() {
+    return window.location.href.includes("/lista-atendimento/atendimento/");
+  }
 
-  function injetarPainel() {
+  function handleUrlChange() {
+    if (isAllowedUrl()) {
+      if (!injectedPanel) {
+        injectPanel();
+        injectedPanel = true;
+      }
+    } else {
+      if (injectedPanel) {
+        removePanel();
+        injectedPanel = false;
+      }
+    }
+  }
+
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function (...args) {
+    originalPushState.apply(history, args);
+    window.dispatchEvent(new Event("urlchange"));
+  };
+
+  history.replaceState = function (...args) {
+    originalReplaceState.apply(history, args);
+    window.dispatchEvent(new Event("urlchange"));
+  };
+
+  window.addEventListener("popstate", handleUrlChange);
+  window.addEventListener("urlchange", handleUrlChange);
+
+  handleUrlChange();
+
+  async function getIndicators() {
+    try {
+      const response = await fetch(`/citizen-indicators`, {
+        method: "GET",
+      });
+
+      if (!response.ok) throw new Error("Erro ao buscar dados");
+
+      return await response.json();
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  function generateHTML(data) {
+    if (data.status) {
+      return `<span>${data.status}</span>`;
+    }
+
+    if (data.error) {
+      return `<span>Erro: ${data.error}</span>`;
+    }
+
+    const groups = {
+      ind2: { title: "Crianças", items: [] },
+      ind4: { title: "Diabéticos", items: [] },
+      ind5: { title: "Hipertensos", items: [] },
+      ind6: { title: "Idosos", items: [] },
+      ind7: { title: "Mulheres na prevenção do cancêr", items: [] },
+    };
+
+    for (const [key, value] of Object.entries(data)) {
+      if (!value) continue;
+      const prefix = key.match(/^ind\d/);
+      if (prefix && groups[prefix[0]]) {
+        groups[prefix[0]].items.push(value);
+      }
+    }
+
+    const htmlParts = ['<ul style="overflow: auto;">'];
+
+    for (const group of Object.values(groups)) {
+      if (group.items.length === 0) continue;
+      htmlParts.push(`<li>${group.title}</li><ul>`);
+      for (const item of group.items) {
+        htmlParts.push(`<li>${item}</li>`);
+      }
+      htmlParts.push(`</ul>`);
+    }
+
+    if (data.st_cad) {
+      htmlParts.push(`<li>Cadastro</li><ul><li>${data.st_cad}</li></ul>`);
+    }
+
+    htmlParts.push('</ul>');
+    return htmlParts.join('\n');
+  }
+
+  async function injectPanel() {
     if (document.getElementById("injected-panel")) return;
 
     const style = document.createElement("style");
     style.textContent = `
       * {
-        font-family: 'Lucida Sans', sans-serif;
+        font-family: "IBM Plex Sans", sans-serif;
+      }
+
+      .iframe {
+        position: fixed;
+        top: 50%;
+        right: 5px;
+        height: 250px;
+        width: 0;
+        z-index: 9990;
+        background: rgb(240, 240, 245);
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        border-radius: 4px;
+        transition: width 0.4s ease, box-shadow 0.4s ease, border 0.4s ease;
       }
 
       .iframe::before {
@@ -22,138 +127,73 @@
         font-weight: bold;
         font-size: 12px;
         text-align: center;
-        padding: 5px;
-        height: auto;
-        font-size: medium;
-        background-color: #071D41;
-        top: 40%;
+        padding-block: 5px;
+        height: 250px;
+        background: rgb(0, 81, 162);
+        #background: rgb(255, 255, 255);
+        #color: rgb(36, 37, 46);
+        #border: 1px solid rgb(211, 212, 221);
+        position: fixed;
+        top: 50%;
         right: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
-        position: fixed;
-        z-index: 9990;
+        z-index: 9991;
         cursor: pointer;
-      }
-
-      .iframe {
-        height: 135px;
-        width: 0px;
-        position: fixed;
-        z-index: 9990;
-        top: 40%;
-        right: 5px;
-        background-color: #f0f8ff;
-        padding-left: 10px;
-        overflow: hidden;
-        display: flex;
+        border-radius: 4px;
       }
 
       .iframe-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 250px;
+        color: rgb(36, 37, 46);
+        font-size: 1rem;
         opacity: 0;
         visibility: hidden;
-        display: flex;
-        height: 100%;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .iframe.iframeClick, .iframe:hover {
         padding-block: 10px;
-        padding-right: 20px;
-        height: auto;
-        width: auto;
-        transition: all 0.3s ease-out;
-        border-left: 10px solid #071D41;
+        transition: opacity 0.4s ease;
+        padding-right: 15px;
       }
 
-      .iframe.iframeClick .iframe-content, .iframe:hover .iframe-content {
+      .iframe.iframeClick,
+      .iframe:hover {
+        width: 350px;
+        padding-right: 8px;
+        border: 1px solid rgb(143, 143, 162);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2),
+                    0 2px 1px -1px rgba(0, 0, 0, 0.12),
+                    0 1px 1px rgba(0, 0, 0, 0.14);
+      }
+
+      .iframe.iframeClick .iframe-content,
+      .iframe:hover .iframe-content {
         opacity: 1;
         visibility: visible;
       }
     `;
+
     document.head.appendChild(style);
 
     const container = document.createElement("div");
     container.className = "iframe";
     container.id = "injected-panel";
+
+    const indicators = await getIndicators();
+    const htmlIndicators = generateHTML(indicators);
+
     container.innerHTML = `
       <div class="iframe-content">
-        <span>Indicadores de Qualidade</span>
-        <ul>
-            <li>
-                Hipertensão
-            </li>
-            <ul>
-                <li>
-                    Falta aferir PA
-                </li>
-            </ul>
-            <li>
-                Diabetes
-            </li>
-            <ul>
-                <li>
-                    Fazer exame de HbA1c
-                </li>
-                <li>
-                    Realizar consulta no período
-                </li>
-            </ul>
-            <li>
-                Saúde da Mulher
-            </li>
-            <ul>
-                <li>
-                    Fazer exame de citopatologia
-                </li>
-            </ul>
-        </ul>
+        <span style="font-weight: bold;">Indicadores de Qualidade</span>
+        ${htmlIndicators}
       </div>
     `;
     document.body.appendChild(container);
 
     container.addEventListener("click", (e) => {
       container.classList.toggle("iframeClick");
-      e.stopPropagation();
-    });
-
-    document.getElementById("downlaoad-icon").addEventListener("click", (e) => {
-      container.classList.toggle("downlaoad-icon");
-      const url = window.location.pathname;
-      const partes = url.split("/");
-      const index = partes.indexOf("folha-rosto");
-      const code = partes[index - 1];
-
-      try {
-        const headers = new Headers();
-        if(url.includes("lista-atendimento")) {
-          headers.append("medicalRecordId", code);
-        } else {
-          headers.append("citizenCode", code);
-        }
-
-        fetch("/citizen", { //Utilizar o caminho utilizado no nginx pra fazer o proxy reverso
-          headers: headers,
-          method: "GET",
-        }).then((response) => {
-          if (!response.ok) throw new Error("Erro ao buscar PDF");
-            return response.blob();
-          })
-        .then((blob) => {
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = blobUrl;
-          a.download = "folha_rosto.pdf";
-          a.click();
-        })
-       
-      } catch (error) {
-        console.log(error);
-      }
-
       e.stopPropagation();
     });
 
@@ -164,33 +204,8 @@
     });
   }
 
-  function removerPainel() {
-    const painel = document.getElementById("injected-panel");
-    if (painel) painel.remove();
+  function removePanel() {
+    const panel = document.getElementById("injected-panel");
+    if (panel) panel.remove();
   }
-
-  function verificarUrlPeriodicamente() {
-    let urlAnterior = "";
-
-    setInterval(() => {
-      const urlAtual = window.location.href;
-      if (urlAtual !== urlAnterior) {
-        urlAnterior = urlAtual;
-
-        if (1 == 1 || urlEhPermitida()) {
-          if (!painelInjetado) {
-            injetarPainel();
-            painelInjetado = true;
-          }
-        } else {
-          if (painelInjetado) {
-            removerPainel();
-            painelInjetado = false;
-          }
-        }
-      }
-    }, 100);
-  }
-
-  verificarUrlPeriodicamente();
 })();

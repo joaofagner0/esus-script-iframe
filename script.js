@@ -160,14 +160,14 @@
         font-size: 12px;
         text-align: center;
         padding-block: 5px;
-        height: 250px;
+        height: 252px;
         background: rgb(0, 81, 162);
         position: fixed;
         top: 50%;
         right: 5px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-around;
         z-index: 9991;
         cursor: pointer;
         border-radius: 4px;
@@ -207,14 +207,33 @@
       .notification-badge {
         color: white;
         font-weight: bold;
-        padding: 6px 2px 7px 4px;
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        padding-left: 2px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         border-radius: 100%;
+        font-size: 12px;
+      }
+
+      .notification-badge-square {
+        color: white;
+        font-weight: bold;
+        padding: 6px 2px 7px 4px;
+        border-radius: 10px;
         font-size: 12px;
         vertical-align: middle;
       }
 
       .badge-error {
         background-color: rgb(208, 29, 40);
+      }
+
+      .badge-beta {
+        background-color: rgb(211, 212, 221);
+        color: rgb(0, 81, 162);
       }
 
       .badge-success {
@@ -233,14 +252,17 @@
 
     container.innerHTML = `
       <div class="iframe-button" id="iframe-button">
-        INDICADORES
-        ${
-          indicators.error
-            ? `<span class="notification-badge badge-error">x</span>`
-            : alertCount > 0
-              ? `<span class="notification-badge badge-error">${alertCount}</span>`
-              : `<span class="notification-badge badge-success">v</span>`
-        }
+        <section style="display: flex; align-items: center; gap: 5px;">
+          INDICADORES
+          ${
+            indicators.error
+              ? `<span class="notification-badge badge-error">x</span>`
+              : alertCount > 0
+                ? `<span class="notification-badge badge-error">${alertCount}</span>`
+                : `<span class="notification-badge badge-success">v</span>`
+          }
+        </section>
+        <span class="notification-badge-square badge-beta">BETA</span>
       </div>
       <div class="iframe-content">
         <span style="font-weight: bold;">Indicadores de Qualidade</span>

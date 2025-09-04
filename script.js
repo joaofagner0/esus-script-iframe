@@ -64,10 +64,11 @@
 
     const groups = {
       ind2: { title: "Crianças", items: [] },
+      ind3: { title: "Gestantes e Puérperas", items: [] },
       ind4: { title: "Diabéticos", items: [] },
       ind5: { title: "Hipertensos", items: [] },
       ind6: { title: "Idosos", items: [] },
-      ind7: { title: "Mulheres na prevenção do cancêr", items: [] },
+      ind7: { title: "Mulheres na prevenção do câncer", items: [] },
     };
 
     for (const [key, value] of Object.entries(data)) {

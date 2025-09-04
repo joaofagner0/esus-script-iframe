@@ -2,7 +2,7 @@
   let injectedPanel = false;
 
   function isAllowedUrl() {
-    return true;
+    return window.location.href.includes("/lista-atendimento/atendimento/");
   }
 
   function handleUrlChange() {

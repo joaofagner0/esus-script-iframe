@@ -2,7 +2,7 @@
   let injectedPanel = false;
 
   function isAllowedUrl() {
-    return window.location.href.includes("/lista-atendimento/atendimento/");
+    return true;
   }
 
   function handleUrlChange() {
@@ -188,6 +188,10 @@
         padding-right: 15px;
       }
 
+      .iframe-content > * :not(header, span, img) {
+        width: 250px;
+      }
+
       .iframe.iframeClick,
       .iframe:hover {
         width: 350px;
@@ -239,6 +243,24 @@
       .badge-success {
         background-color: rgb(35, 123, 1);
       }
+
+      .iframe-button img {
+        transform: rotate(180deg);
+        width: 20px;
+        margin-left: 1px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 307px;
+      }
+      
+      .header img {
+        width: 35px;
+        margin: 0;
+      }
     `;
 
     document.head.appendChild(style);
@@ -252,6 +274,7 @@
 
     container.innerHTML = `
       <div class="iframe-button" id="iframe-button">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAASFBMVEVHcExApvY/pfY/pfYaddNApvcsi+ITcdBBp/cXdNI+pPUUctBAp/cXddIujuQ0lelAp/cWdNE/pfUoiOAXdNIYddIUctAYddLAdsKQAAAAGHRSTlMAjZ94Df//blSk/v7p/7jL8OKyRhe1MVpeXAiJAAAAgUlEQVR4Ad3OAQqDQAxE0bHadTWmVVf1/jd1kwA44An8AAOBB8ELaz41oLXpwLXfWuqzzwDOjqPIZKsalKGkGB2e4BgwKMFfwL+oGiU4Y3GIhWljxxx+RVGjBCfAoWxECSbdiQa0iVeJMlSi3Q3Obo6gG4C81gqKTT72Wg+fEy/qAmzyCRz5hTsqAAAAAElFTkSuQmCC">
         <section style="display: flex; align-items: center; gap: 5px;">
           INDICADORES
           ${
@@ -265,8 +288,12 @@
         <span class="notification-badge-square badge-beta">BETA</span>
       </div>
       <div class="iframe-content">
-        <span style="font-weight: bold;">Indicadores de Qualidade</span>
-        ${!indicators.error ? '<span style="font-size: small;">(Os dados serão atualizados após o processamento)</span>' : '<span></span>'}
+        <div class="header">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAASFBMVEVHcExApvY/pfY/pfYaddNApvcsi+ITcdBBp/cXdNI+pPUUctBAp/cXddIujuQ0lelAp/cWdNE/pfUoiOAXdNIYddIUctAYddLAdsKQAAAAGHRSTlMAjZ94Df//blSk/v7p/7jL8OKyRhe1MVpeXAiJAAAAgUlEQVR4Ad3OAQqDQAxE0bHadTWmVVf1/jd1kwA44An8AAOBB8ELaz41oLXpwLXfWuqzzwDOjqPIZKsalKGkGB2e4BgwKMFfwL+oGiU4Y3GIhWljxxx+RVGjBCfAoWxECSbdiQa0iVeJMlSi3Q3Obo6gG4C81gqKTT72Wg+fEy/qAmzyCRz5hTsqAAAAAElFTkSuQmCC">
+          <span style="font-weight: bold;">Indicadores de Qualidade</span>
+          <span style="width: 35px;"></span>
+        </div>
+        ${indicators.error ? '<span style="font-size: small; margin-bottom: 7px;">(Os dados serão atualizados após o processamento)</span>' : '<span></span>'}
         ${html}
       </div>
     `;

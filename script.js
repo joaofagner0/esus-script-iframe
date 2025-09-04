@@ -64,6 +64,7 @@
 
     const groups = {
       ind2: { title: "Crianças", items: [] },
+      ind3: { title: "Gestantes e Puérperas", items: [] },
       ind4: { title: "Diabéticos", items: [] },
       ind5: { title: "Hipertensos", items: [] },
       ind6: { title: "Idosos", items: [] },

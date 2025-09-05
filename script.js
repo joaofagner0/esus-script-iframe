@@ -294,7 +294,7 @@
           <span style="font-weight: bold;">Indicadores de Qualidade</span>
           <span style="width: 35px;"></span>
         </div>
-        ${indicators.error ? '<span style="font-size: small; margin-bottom: 7px;">(Os dados serão atualizados após o processamento)</span>' : '<span></span>'}
+        ${!indicators.error ? '<span style="font-size: small; margin-bottom: 7px;">(Os dados serão atualizados após o processamento)</span>' : '<span></span>'}
         ${html}
       </div>
     `;

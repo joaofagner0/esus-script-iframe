@@ -378,9 +378,9 @@
 
       .processing-text {
         text-align: center;
-        font-size: 13px;
-        padding: 0 15px;
-        margin-bottom: 8px;
+        font-size: 12px;
+        padding-bottom: 8px;
+        margin: 0 auto;
       }
 
       .indicator-row {
@@ -484,7 +484,7 @@
           <span style="width: 35px;"></span>
         </div>
 
-        ${!indicators.error ? '<div class="processing-text">(Os dados serão atualizados após o processamento)</div>' : '<div></div>'}
+        ${!indicators.error ? '<div class="processing-text">(Os dados serão atualizados após o processamento diário)</div>' : '<div></div>'}
         ${html}
       </div>
     `;
